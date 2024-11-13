@@ -1,27 +1,59 @@
-# Deploy FastAPI on Render
+# Plant Disease Detection API
 
-Use this repo as a template to deploy a Python [FastAPI](https://fastapi.tiangolo.com) service on Render.
+This project is a FastAPI-based web application that detects plant diseases from uploaded images and provides fertilizer and treatment recommendations based on the disease identified. The API leverages a machine learning model (`plants-final/1`) to classify plant diseases from images and offers suggestions to help manage and treat the plants effectively.
 
-See https://render.com/docs/deploy-fastapi or follow the steps below:
+## Features
 
-## Manual Steps
+- **Disease Prediction**: Detect plant diseases from images of plant leaves.
+- **Fertilizer Recommendations**: Get personalized fertilizer recommendations based on the identified disease.
+- **Treatment Recommendations**: Receive suggested treatments, including fungicides and other management strategies.
+- **Upload Plant Images**: Users can upload plant images to the API for analysis.
 
-1. You may use this repository directly or [create your own repository from this template](https://github.com/render-examples/fastapi/generate) if you'd like to customize the code.
-2. Create a new Web Service on Render.
-3. Specify the URL to your new repository or this repository.
-4. Render will automatically detect that you are deploying a Python service and use `pip` to download the dependencies.
-5. Specify the following as the Start Command.
+## Technologies Used
 
-    ```shell
-    uvicorn main:app --host 0.0.0.0 --port $PORT
-    ```
+- **FastAPI**: A modern, fast web framework for building APIs with Python 3.7+.
+- **Uvicorn**: ASGI server used to serve the FastAPI app.
+- **Machine Learning Model**: A pre-trained model for detecting plant diseases.
 
-6. Click Create Web Service.
+## Requirements
 
-Or simply click:
+- Python 3.7+
+- FastAPI
+- Uvicorn
+- Pillow (for image handling)
+- shutil (for file operations)
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/render-examples/fastapi)
+## Setup and Installation
 
-## Thanks
+### 1. Clone the Repository
 
-Thanks to [Harish](https://harishgarg.com) for the [inspiration to create a FastAPI quickstart for Render](https://twitter.com/harishkgarg/status/1435084018677010434) and for some sample code!
+Start by cloning the repository to your local machine:
+
+```bash
+git clone https://github.com/pranayyb/agro.git
+cd agro
+```
+### 2. Create a Virtual Environment (Optional but Recommended)
+
+It is highly recommended to use a virtual environment to isolate the project dependencies.
+
+#### Windows:
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+#### Linux/MacOS:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Start the Application
+```bash
+uvicorn main:app --reload
+```
