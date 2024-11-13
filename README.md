@@ -1,27 +1,27 @@
-# Plant Disease Detection API
+# Plant Disease and Crop Prediction API
 
-This project is a FastAPI-based web application that detects plant diseases from uploaded images and provides fertilizer and treatment recommendations based on the disease identified. The API leverages a machine learning model (`plants-final/1`) to classify plant diseases from images and offers suggestions to help manage and treat the plants effectively.
+This project is a FastAPI-based web application that predicts plant diseases from leaf images and offers crop prediction based on agricultural parameters. The app uses machine learning models for both crop and disease predictions and provides suggestions for treatment and fertilizers based on identified plant diseases.
 
 ## Features
-
-- **Disease Prediction**: Detect plant diseases from images of plant leaves.
-- **Fertilizer Recommendations**: Get personalized fertilizer recommendations based on the identified disease.
-- **Treatment Recommendations**: Receive suggested treatments, including fungicides and other management strategies.
-- **Upload Plant Images**: Users can upload plant images to the API for analysis.
+- **Crop Prediction**: Predict the best crop to grow based on agricultural parameters such as nitrogen, phosphorus, potassium levels, temperature, humidity, etc.
+- **Plant Disease Detection**: Detect plant diseases from uploaded leaf images and provide disease-specific recommendations.
+- **Fertilizer and Treatment Recommendations**: Get personalized fertilizer and treatment recommendations based on the detected plant disease.
 
 ## Technologies Used
-
 - **FastAPI**: A modern, fast web framework for building APIs with Python 3.7+.
-- **Uvicorn**: ASGI server used to serve the FastAPI app.
-- **Machine Learning Model**: A pre-trained model for detecting plant diseases.
+- **Uvicorn**: ASGI server to serve the FastAPI app.
+- **Pickle**: For loading pre-trained machine learning models.
+- **InferenceHTTPClient**: For interacting with the external model API.
+- **Pillow (PIL)**: For image handling.
 
 ## Requirements
-
 - Python 3.7+
 - FastAPI
 - Uvicorn
-- Pillow (for image handling)
-- shutil (for file operations)
+- Pillow
+- Numpy
+- Scikit-learn (for model loading)
+- Inference SDK (for external model inference)
 
 ## Setup and Installation
 
