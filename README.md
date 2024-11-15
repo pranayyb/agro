@@ -57,3 +57,60 @@ pip install -r requirements.txt
 ```bash
 uvicorn main:app --reload
 ```
+
+## Endpoints
+
+### 1. `/predict-crop`
+
+#### Description:
+Predicts the best crop to grow based on soil and environmental parameters.
+
+#### Method:
+`POST`
+
+#### Request:
+- **Content-Type**: `application/json`
+- **Request Body**:
+  ```json
+  {
+    "nitrogen": float,      # Nitrogen content in the soil (e.g., 50.0)
+    "phosphorus": float,    # Phosphorus content in the soil (e.g., 20.0)
+    "potassium": float,     # Potassium content in the soil (e.g., 30.0)
+    "temperature": float,   # Temperature in Celsius (e.g., 25.0)
+    "humidity": float,      # Relative Humidity as a percentage (e.g., 80.0)
+    "ph": float,            # Soil pH value (e.g., 6.5)
+    "rainfall": float       # Rainfall in mm (e.g., 200.0)
+  }
+#### Response:
+
+- **Content-Type**: `application/json`
+- **Response Body**:
+  ```json
+  {
+    "predicted_crop": "crop_name"  // Name of the predicted crop (e.g., "rice")
+  }
+
+
+### 2. `/detect-disease`
+
+#### Description:
+Detects plant diseases from uploaded leaf images and recommends fertilizers and treatments.
+
+#### Method:
+`POST`
+
+#### Request:
+- **Content-Type**: `multipart/form-data`
+- **Request Parameters**:
+  - `file`: An image file of a plant leaf.
+
+#### Response:
+- **Content-Type**: `application/json`
+- **Response Body**:
+  ```json
+  {
+    "predicted_class": "disease_name",  // Name of the detected disease or plant type (e.g., "Apple Scab Leaf")
+    "confidence": "percentage",        // Confidence of the detection in percentage (e.g., "95.67%")
+    "fertilizer_recommendation": "fertilizer_details", // Suggested fertilizers (e.g., "Nitrogen-rich fertilizers")
+    "treatment_recommendation": "treatment_details"    // Suggested treatment (e.g., "Fungicides containing sulfur")
+  }
