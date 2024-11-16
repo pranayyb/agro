@@ -217,8 +217,8 @@ async def detect_disease(file: UploadFile = File(...)):
             }
         else:
             return {
-                "predicted_class": predicted_class,
-                "confidence": f"{confidence * 100:.2f}%",
+                "predicted_class": "Could not determine the disease",
+                "confidence": "No confidence value",
                 "fertilizer_recommendation": "No specific fertilizer recommendation",
                 "treatment_recommendation": "No specific treatment recommendation",
             }
