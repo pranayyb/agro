@@ -9,6 +9,7 @@ import numpy as np
 from inference_sdk import InferenceHTTPClient
 import io
 from PIL import Image
+from fastapi.middleware.cors import CORSMiddleware
 
 with open("models/crop_prediction_model.pkl", "rb") as f:
     model = pickle.load(f)
@@ -20,6 +21,14 @@ with open("models/label_encoder.pkl", "rb") as encoder_file:
     loaded_label_encoder = pickle.load(encoder_file)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins, change to specific origins if needed
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods
+    allow_headers=["*"],  # Allows all HTTP headers
+)
 
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com", api_key="yjGS9C041cEmorXMHwZI"
