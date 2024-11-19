@@ -10,6 +10,8 @@ from inference_sdk import InferenceHTTPClient
 import io
 from PIL import Image
 from fastapi.middleware.cors import CORSMiddleware
+from dict import plant_diseases_to_fertilizers
+from mappings import PLANT_MODEL_MAPPING, PREDICTED_LABEL_TO_DISEASE_MAPPING
 
 with open("models/crop_prediction_model.pkl", "rb") as f:
     model = pickle.load(f)
@@ -34,124 +36,9 @@ CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com", api_key="yjGS9C041cEmorXMHwZI"
 )
 
-plant_diseases_to_fertilizers = {
-    "Apple Scab Leaf": {
-        "fertilizer": "Nitrogen-rich fertilizers",
-        "treatment": "Fungicides containing captan or sulfur",
-    },
-    "Apple leaf": {
-        "fertilizer": "Balanced NPK fertilizers (10-10-10)",
-        "treatment": "Fungicides such as myclobutanil or mancozeb",
-    },
-    "Apple rust leaf": {
-        "fertilizer": "Phosphorus-rich fertilizers",
-        "treatment": "Fungicides containing triadimefon or sulfur",
-    },
-    "Bell_pepper leaf spot": {
-        "fertilizer": "Balanced NPK fertilizer (10-10-10)",
-        "treatment": "Copper-based fungicides or mancozeb",
-    },
-    "Bell_pepper leaf": {
-        "fertilizer": "Nitrogen-rich fertilizers",
-        "treatment": "Fungicides such as chlorothalonil",
-    },
-    "Blueberry leaf": {
-        "fertilizer": "Acidic fertilizers (Ammonium sulfate)",
-        "treatment": "Fungicides containing sulfur or copper",
-    },
-    "Cherry leaf": {
-        "fertilizer": "Balanced fertilizer with a focus on potassium",
-        "treatment": "Fungicides containing copper or neem oil",
-    },
-    "Corn Gray leaf spot": {
-        "fertilizer": "High-nitrogen fertilizer",
-        "treatment": "Fungicides containing strobilurin or chlorothalonil",
-    },
-    "Corn leaf blight": {
-        "fertilizer": "Phosphorus-rich fertilizers",
-        "treatment": "Fungicides with azoxystrobin or propiconazole",
-    },
-    "Corn rust leaf": {
-        "fertilizer": "High-nitrogen fertilizers",
-        "treatment": "Fungicides containing triazole or chlorothalonil",
-    },
-    "Peach leaf": {
-        "fertilizer": "Balanced NPK fertilizer with a focus on potassium",
-        "treatment": "Fungicides containing copper or sulfur",
-    },
-    "Potato leaf early blight": {
-        "fertilizer": "Balanced NPK fertilizers, especially with potassium",
-        "treatment": "Fungicides such as chlorothalonil or mancozeb",
-    },
-    "Potato leaf late blight": {
-        "fertilizer": "Phosphorus-rich fertilizers",
-        "treatment": "Fungicides containing metalaxyl or mefenoxam",
-    },
-    "Potato leaf": {
-        "fertilizer": "Balanced fertilizers (NPK 10-10-10)",
-        "treatment": "Fungicides such as chlorothalonil or copper sulfate",
-    },
-    "Raspberry leaf": {
-        "fertilizer": "Balanced NPK fertilizer (10-10-10)",
-        "treatment": "Fungicides containing sulfur or copper",
-    },
-    "Soyabean leaf": {
-        "fertilizer": "Balanced NPK fertilizer (15-15-15)",
-        "treatment": "Fungicides containing azoxystrobin or chlorothalonil",
-    },
-    "Squash Powdery mildew leaf": {
-        "fertilizer": "High-potassium fertilizers",
-        "treatment": "Fungicides such as sulfur or potassium bicarbonate",
-    },
-    "Strawberry leaf": {
-        "fertilizer": "Balanced NPK fertilizer with an emphasis on potassium",
-        "treatment": "Fungicides containing chlorothalonil or sulfur",
-    },
-    "Tomato Early blight leaf": {
-        "fertilizer": "Balanced NPK fertilizer with high potassium",
-        "treatment": "Fungicides like chlorothalonil or copper-based treatments",
-    },
-    "Tomato Septoria leaf spot": {
-        "fertilizer": "Balanced NPK fertilizers (10-10-10)",
-        "treatment": "Fungicides containing chlorothalonil or mancozeb",
-    },
-    "Tomato leaf bacterial spot": {
-        "fertilizer": "Balanced NPK fertilizer with a focus on potassium",
-        "treatment": "Copper-based fungicides",
-    },
-    "Tomato leaf late blight": {
-        "fertilizer": "Phosphorus-rich fertilizers",
-        "treatment": "Fungicides containing mefenoxam or copper",
-    },
-    "Tomato leaf mosaic virus": {
-        "fertilizer": "Nutrient-rich fertilizers to improve plant vigor",
-        "treatment": "No chemical treatment, remove infected plants",
-    },
-    "Tomato leaf yellow virus": {
-        "fertilizer": "Balanced NPK fertilizers",
-        "treatment": "No chemical treatment, remove infected plants",
-    },
-    "Tomato leaf": {
-        "fertilizer": "Balanced NPK fertilizer (10-10-10)",
-        "treatment": "Fungicides containing chlorothalonil or copper",
-    },
-    "Tomato mold leaf": {
-        "fertilizer": "High-potassium fertilizers",
-        "treatment": "Fungicides like potassium bicarbonate or sulfur",
-    },
-    "Tomato two spotted spider mites leaf": {
-        "fertilizer": "Balanced NPK fertilizer",
-        "treatment": "Miticides or insecticidal soaps",
-    },
-    "grape leaf black rot": {
-        "fertilizer": "Balanced NPK fertilizers with potassium",
-        "treatment": "Fungicides like sulfur or copper-based treatments",
-    },
-    "grape leaf": {
-        "fertilizer": "Balanced NPK fertilizers (10-10-10)",
-        "treatment": "Fungicides such as copper sulfate",
-    },
-}
+
+def get_supported_plant_types():
+    return list(PLANT_MODEL_MAPPING.keys())
 
 
 class CropPredictionInput(BaseModel):
@@ -191,37 +78,65 @@ def predict_crop(data: CropPredictionInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/detect-disease")
-async def detect_disease(file: UploadFile = File(...)):
+@app.post("/detect-disease/{plant_type}")
+async def detect_disease(
+    plant_type: str,
+    file: UploadFile = File(...),
+):
+    plant_type = plant_type.lower()
+
+    if plant_type not in PLANT_MODEL_MAPPING:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported plant type. Supported types are: {', '.join(PLANT_MODEL_MAPPING.keys())}",
+        )
+
     try:
-        temp_file_path = f"temp_{file.filename}"
+        temp_file_path = f"temp_{plant_type}_{file.filename}"
 
         with open(temp_file_path, "wb") as temp_file:
             shutil.copyfileobj(file.file, temp_file)
 
-        result = CLIENT.infer(temp_file_path, model_id="plants-final/1")
-
-        predicted_class = result["predictions"][0]["class"]
-        confidence = result["predictions"][0]["confidence"]
+        model_id = PLANT_MODEL_MAPPING[plant_type]
+        result = CLIENT.infer(temp_file_path, model_id=model_id)
 
         os.remove(temp_file_path)
 
-        disease_info = plant_diseases_to_fertilizers.get(predicted_class, None)
+        predicted_class = result["predictions"][0]["class"]
+        confidence = result["predictions"][0]["confidence"]
+        if predicted_class in PREDICTED_LABEL_TO_DISEASE_MAPPING:
+            label_final = PREDICTED_LABEL_TO_DISEASE_MAPPING[predicted_class]
+            disease_info = plant_diseases_to_fertilizers.get(label_final, None)
+        else:
+            disease_info = plant_diseases_to_fertilizers.get(predicted_class, None)
 
         if disease_info:
             return {
-                "predicted_class": predicted_class,
+                "plant_type": plant_type,
+                "disease": predicted_class,
                 "confidence": f"{confidence * 100:.2f}%",
                 "fertilizer_recommendation": disease_info["fertilizer"],
                 "treatment_recommendation": disease_info["treatment"],
             }
         else:
             return {
-                "predicted_class": "Could not determine the disease",
-                "confidence": "No confidence value",
-                "fertilizer_recommendation": "No specific fertilizer recommendation",
-                "treatment_recommendation": "No specific treatment recommendation",
+                "plant_type": plant_type,
+                "disease": predicted_class,
+                "confidence": f"{confidence * 100:.2f}%",
+                "fertilizer_recommendation": "No specific fertilizer recommendation for this disease",
+                "treatment_recommendation": "No specific treatment recommendation for this disease",
             }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error processing {plant_type} image: {str(e)}"
+        )
+
+
+@app.get("/supported-plants")
+async def get_supported_plants():
+    supported_plants = get_supported_plant_types()
+    return {
+        "supported_plants": supported_plants,
+        "total_count": len(supported_plants),
+    }
